@@ -378,6 +378,11 @@ def main():
                          lr=args.learning_rate,
                          warmup=args.warmup_proportion,
                          t_total=num_train_optimization_steps)
+    
+    if args.fp16:
+        from apex import amp
+        student_model, optimizer = amp.initialize(student_model, optimizer, opt_level='O1')
+        teacher_model = amp.initialize(teacher_model, opt_level='O1')
 
     global_step = 0
     logging.info("***** Running training *****")
@@ -443,7 +448,8 @@ def main():
                     loss = loss / args.gradient_accumulation_steps
 
                 if args.fp16:
-                    optimizer.backward(loss)
+                    with amp.scale_loss(loss, optimizer) as scaled_loss:
+                        scaled_loss.backward()
                 else:
                     loss.backward()
 
