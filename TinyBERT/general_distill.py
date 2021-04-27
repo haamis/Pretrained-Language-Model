@@ -276,7 +276,7 @@ def main():
 
     samples_per_epoch = []
     for i in range(int(args.num_train_epochs)):
-        epoch_file = args.pregenerated_data / "epoch_{}.json".format(i)
+        epoch_file = args.pregenerated_data / "epoch_{}.json.gz".format(i)
         metrics_file = args.pregenerated_data / "epoch_{}_metrics.json".format(i)
         if epoch_file.is_file() and metrics_file.is_file():
             metrics = json.loads(metrics_file.read_text())
