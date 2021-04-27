@@ -26,11 +26,12 @@ import os
 import random
 import sys
 import json
+import gzip
 
 import numpy as np
 import torch
 from collections import namedtuple
-from tempfile import TemporaryDirectory
+from tempfile import TemporaryDirectory, tempdir
 from pathlib import Path
 from torch.utils.data import (DataLoader, RandomSampler,Dataset)
 from torch.utils.data.distributed import DistributedSampler
@@ -107,7 +108,7 @@ class PregeneratedDataset(Dataset):
         self.epoch = epoch
         self.data_epoch = int(epoch % num_data_epochs)
         logger.info('training_path: {}'.format(training_path))
-        data_file = training_path / "epoch_{}.json".format(self.data_epoch)
+        data_file = training_path / "epoch_{}.json.gz".format(self.data_epoch)
         metrics_file = training_path / "epoch_{}_metrics.json".format(self.data_epoch)
 
         logger.info('data_file: {}'.format(data_file))
@@ -121,7 +122,7 @@ class PregeneratedDataset(Dataset):
         self.working_dir = None
         if reduce_memory:
             self.temp_dir = TemporaryDirectory()
-            self.working_dir = Path('/cache')
+            self.working_dir = Path(tempdir)
             input_ids = np.memmap(filename=self.working_dir/'input_ids.memmap',
                                   mode='w+', dtype=np.int32, shape=(num_samples, seq_len))
             input_masks = np.memmap(filename=self.working_dir/'input_masks.memmap',
@@ -142,7 +143,8 @@ class PregeneratedDataset(Dataset):
 
         logging.info("Loading training examples for epoch {}".format(epoch))
 
-        with data_file.open() as f:
+        #with data_file.open() as f:
+        with gzip.open(data_file) as f:
             for i, line in enumerate(tqdm(f, total=num_samples, desc="Training examples")):
                 line = line.strip()
                 example = json.loads(line)
@@ -484,7 +486,7 @@ def main():
                                 writer.write("%s = %s\n" % (key, str(result[key])))
 
                         # Save a trained model
-                        model_name = "step_{}_{}".format(global_step, WEIGHTS_NAME)
+                        model_name = "{}".format(global_step, WEIGHTS_NAME)
                         logging.info("** ** * Saving fine-tuned model ** ** * ")
                         # Only save the model it-self
                         model_to_save = student_model.module if hasattr(student_model, 'module') else student_model
@@ -502,7 +504,7 @@ def main():
                             mox.file.copy_parallel(args.output_dir, args.data_url)
                             mox.file.copy_parallel('.', args.data_url)
 
-            model_name = "step_{}_{}".format(global_step, WEIGHTS_NAME)
+            model_name = "{}".format(global_step, WEIGHTS_NAME)
             logging.info("** ** * Saving fine-tuned model ** ** * ")
             model_to_save = student_model.module if hasattr(student_model, 'module') else student_model
 

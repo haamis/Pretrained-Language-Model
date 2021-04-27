@@ -50,7 +50,7 @@ class DocumentDatabase:
             self.temp_dir = TemporaryDirectory()
             self.working_dir = Path(self.temp_dir.name)
             self.document_shelf_filepath = self.working_dir / 'shelf.db'
-            self.document_shelf = shelve.open('/cache/shelf.db',
+            self.document_shelf = shelve.open(document_shelf_filepath,
                                               flag='n', protocol=-1)
             self.documents = None
         else:
