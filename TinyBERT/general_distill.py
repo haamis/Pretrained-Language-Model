@@ -387,8 +387,9 @@ def main():
     
     if args.fp16 and args.local_rank == -1:
         from apex import amp
-        student_model, optimizer = amp.initialize(student_model, optimizer, opt_level='O1')
-        teacher_model = amp.initialize(teacher_model, opt_level='O1')
+        # student_model, optimizer = amp.initialize(student_model, optimizer, opt_level='O1')
+        # teacher_model = amp.initialize(teacher_model, opt_level='O1')
+        [student_model, teacher_model], optimizer = amp.initialize([student_model, teacher_model], optimizer, opt_level='O2')
 
     global_step = 0
     logging.info("***** Running training *****")
