@@ -486,7 +486,7 @@ def main():
                                 writer.write("%s = %s\n" % (key, str(result[key])))
 
                         # Save a trained model
-                        model_name = "{}".format(global_step, WEIGHTS_NAME)
+                        model_name = "checkpoint_{}".format(WEIGHTS_NAME)
                         logging.info("** ** * Saving fine-tuned model ** ** * ")
                         # Only save the model it-self
                         model_to_save = student_model.module if hasattr(student_model, 'module') else student_model
@@ -504,7 +504,7 @@ def main():
                             mox.file.copy_parallel(args.output_dir, args.data_url)
                             mox.file.copy_parallel('.', args.data_url)
 
-            model_name = "{}".format(global_step, WEIGHTS_NAME)
+            model_name = "epoch_{}_{}".format(epoch, WEIGHTS_NAME) # "Epoch {}".format(epoch)
             logging.info("** ** * Saving fine-tuned model ** ** * ")
             model_to_save = student_model.module if hasattr(student_model, 'module') else student_model
 
