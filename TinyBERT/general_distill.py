@@ -266,6 +266,10 @@ def main():
                         type=int,
                         default=1000)
 
+    parser.add_argument('--epoch_start',
+                        type=int,
+                        default=0)
+
     # This is used for running on Huawei Cloud.
     parser.add_argument('--data_url',
                         type=str,
@@ -275,7 +279,7 @@ def main():
     logger.info('args:{}'.format(args))
 
     samples_per_epoch = []
-    for i in range(int(args.num_train_epochs)):
+    for i in range(args.epoch_start, int(args.num_train_epochs)):
         epoch_file = args.pregenerated_data / "epoch_{}.json.gz".format(i)
         metrics_file = args.pregenerated_data / "epoch_{}_metrics.json".format(i)
         if epoch_file.is_file() and metrics_file.is_file():
@@ -381,7 +385,7 @@ def main():
                          warmup=args.warmup_proportion,
                          t_total=num_train_optimization_steps)
     
-    if args.fp16:
+    if args.fp16 and args.local_rank != -1:
         from apex import amp
         student_model, optimizer = amp.initialize(student_model, optimizer, opt_level='O1')
         teacher_model = amp.initialize(teacher_model, opt_level='O1')
@@ -392,7 +396,7 @@ def main():
     logging.info("  Batch size = %d", args.train_batch_size)
     logging.info("  Num steps = %d", num_train_optimization_steps)
 
-    for epoch in trange(int(args.num_train_epochs), desc="Epoch"):
+    for epoch in trange(args.epoch_start, int(args.num_train_epochs), desc="Epoch"):
         epoch_dataset = PregeneratedDataset(epoch=epoch, training_path=args.pregenerated_data, tokenizer=tokenizer,
                                             num_data_epochs=num_data_epochs, reduce_memory=args.reduce_memory)
         if args.local_rank == -1:
