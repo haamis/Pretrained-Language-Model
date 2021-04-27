@@ -385,7 +385,7 @@ def main():
                          warmup=args.warmup_proportion,
                          t_total=num_train_optimization_steps)
     
-    if args.fp16 and args.local_rank != -1:
+    if args.fp16 and args.local_rank == -1:
         from apex import amp
         student_model, optimizer = amp.initialize(student_model, optimizer, opt_level='O1')
         teacher_model = amp.initialize(teacher_model, opt_level='O1')
